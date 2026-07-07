@@ -1,3 +1,23 @@
 {
-  "MDCSWT.ModuleTitle": "MD Campaigns SW Tweaks"
+  "MDCSWT.ModuleTitle": "MD Campaigns SW Tweaks",
+  "MDCSWT.GroupRoll.Title": "Group Trait Roll",
+  "MDCSWT.GroupRoll.Trait": "Trait",
+  "MDCSWT.GroupRoll.Attributes": "Attributes",
+  "MDCSWT.GroupRoll.Skills": "Skills",
+  "MDCSWT.GroupRoll.Special": "Special",
+  "MDCSWT.GroupRoll.Untrained": "Untrained",
+  "MDCSWT.GroupRoll.Other": "Other...",
+  "MDCSWT.GroupRoll.OtherTitle": "Other Skill",
+  "MDCSWT.GroupRoll.OtherLabel": "Skill name",
+  "MDCSWT.GroupRoll.Modifier": "Modifier",
+  "MDCSWT.GroupRoll.PrivateRoll": "Private roll (GM only)",
+  "MDCSWT.GroupRoll.AutoRoll": "Roll immediately",
+  "MDCSWT.GroupRoll.Roll": "Roll",
+  "MDCSWT.GroupRoll.Cancel": "Cancel",
+  "MDCSWT.GroupRoll.GMOnly": "Group Trait Roll is GM-only.",
+  "MDCSWT.GroupRoll.NoBR2": "Better Rolls 2 is not active — Group Trait Roll needs game.brsw.",
+  "MDCSWT.GroupRoll.NoTokens": "No usable tokens selected.",
+  "MDCSWT.GroupRoll.NoActor": "Token has no actor, skipped",
+  "MDCSWT.GroupRoll.VehicleSkipped": "Vehicle token skipped",
+  "MDCSWT.GroupRoll.CardFailed": "Card creation failed for"
 }

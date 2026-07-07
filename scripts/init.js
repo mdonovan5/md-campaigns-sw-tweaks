@@ -4,6 +4,8 @@
 // MD Campaigns SW Tweaks — entry point
 // ============================================================
 
+import { rollGroupTrait } from "./group-trait-roll.js";
+
 const MODULE_ID = "md-campaigns-sw-tweaks";
 const LOG_PREFIX = `${MODULE_ID} |`;
 
@@ -15,6 +17,9 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   const mod = game.modules.get(MODULE_ID);
+  mod.api = {
+    rollGroupTrait,
+  };
   console.log(LOG_PREFIX, `ready — v${mod?.version}`);
   // Anything that needs game data or other modules (e.g. game.brsw) goes here.
 });
