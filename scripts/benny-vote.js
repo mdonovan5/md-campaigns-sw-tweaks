@@ -269,6 +269,7 @@ async function whisperSummary(voters, results) {
   }
   await ChatMessage.create({
     content: parts.join("\n"),
+    speaker: { alias: loc("MDCSWT.BennyVote.PollTitle"), actor: null, token: null, scene: null },
     whisper: ChatMessage.getWhisperRecipients("GM").map((u) => u.id),
   });
 }
