@@ -2,7 +2,7 @@
   "id": "md-campaigns-sw-tweaks",
   "title": "MD Campaigns SW Tweaks",
   "description": "House rules and automation tweaks for the MD Campaigns SWADE/SWPF games.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "compatibility": {
     "minimum": "14",
     "verified": "14"
