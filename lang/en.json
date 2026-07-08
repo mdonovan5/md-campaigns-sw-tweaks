@@ -19,5 +19,8 @@
   "MDCSWT.GroupRoll.NoTokens": "No usable tokens selected.",
   "MDCSWT.GroupRoll.NoActor": "Token has no actor, skipped",
   "MDCSWT.GroupRoll.VehicleSkipped": "Vehicle token skipped",
-  "MDCSWT.GroupRoll.CardFailed": "Card creation failed for"
+  "MDCSWT.GroupRoll.CardFailed": "Card creation failed for",
+  "MDCSWT.Arcana.Enable": "Major Arcana HUD",
+  "MDCSWT.Arcana.EnableHint": "Show a screen HUD, visible to all players, with every Major Arcana currently kept as an initiative card: the card art, who drew it, and its effect.",
+  "MDCSWT.Arcana.HudTitle": "MAJOR ARCANA"
 }

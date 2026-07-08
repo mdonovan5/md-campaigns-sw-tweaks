@@ -1,25 +1,29 @@
-/* globals Hooks, game, console */
+/* globals Hooks, game, ui, console */
 
 // ============================================================
 // MD Campaigns SW Tweaks — entry point
 // ============================================================
 
 import { rollGroupTrait } from "./group-trait-roll.js";
+import { MAJOR_EFFECTS, registerArcanaChatHook } from "./major-arcana.js";
+import { registerArcanaHud } from "./arcana-hud.js";
 
 const MODULE_ID = "md-campaigns-sw-tweaks";
 const LOG_PREFIX = `${MODULE_ID} |`;
 
 Hooks.once("init", () => {
   console.log(LOG_PREFIX, "init");
-  // Register game settings here:
-  // game.settings.register(MODULE_ID, "settingKey", { ... });
+  registerArcanaHud(); // settings + combat hooks + HUD render hooks
+  registerArcanaChatHook(); // effect text on card-draw chat cards
 });
 
 Hooks.once("ready", () => {
   const mod = game.modules.get(MODULE_ID);
   mod.api = {
     rollGroupTrait,
+    majorEffects: MAJOR_EFFECTS,
   };
   console.log(LOG_PREFIX, `ready — v${mod?.version}`);
-  // Anything that needs game data or other modules (e.g. game.brsw) goes here.
+  // Carried over from the retired world script: collapse the nav bar.
+  ui.nav?.collapse?.();
 });
