@@ -5,9 +5,15 @@
 //
 // GM-only. Rolls a trait (attribute or skill) on all selected
 // tokens through the BR2 card pipeline. Skills an actor lacks
-// fall back to a persistent "Untrained" skill item (d4-2,
-// wild die d4 — enforced), which BR2 rolls with a wild die
-// only for Wild Cards.
+// roll as untrained attempts per the house rule via the BR2
+// fork's create_untrained_skill_card API (d4, modifier of half
+// the linked attribute die minus 5 capped at +1, wild die d4;
+// no item is created on the actor). The linked attribute is
+// resolved from an embedded skill on another selected actor,
+// then from BR2's cached skill data, then by asking the GM.
+// Five "<Attribute> Skill" entries cover skills nobody has.
+//
+// Requires the BR2 fork with game.brsw.create_untrained_skill_card.
 //
 // Public API: game.modules.get(MODULE_ID).api.rollGroupTrait()
 // ============================================================
@@ -16,12 +22,6 @@ const MODULE_ID = "md-campaigns-sw-tweaks";
 const LOG_PREFIX = `${MODULE_ID} |`;
 
 // --- Configurable constants -------------------------------------------------
-
-// House-rule dice for the Untrained skill item.
-const UNTRAINED_DIE_SIDES = 4;
-const UNTRAINED_DIE_MODIFIER = -2;
-const UNTRAINED_WILD_DIE_SIDES = 4;
-const UNTRAINED_ITEM_IMG = "systems/swade/assets/icons/skill.svg";
 
 // Attribute order for the dialog (also BR2's canonical list).
 const ATTRIBUTES = ["agility", "smarts", "spirit", "strength", "vigor"];
@@ -91,48 +91,66 @@ function isUntrainedSkillItem(item) {
 }
 
 /**
- * Returns the actor's untrained skill item, creating it if missing and
- * correcting its dice to the house spec (d4-2, wild die d4) if they differ.
- * @param {Actor} actor
- * @returns {Promise<Item>}
+ * Resolves a skill's linked attribute from BR2's cached skill data
+ * (skill compendia plus world items, built by BR2 at ready). Mirrors
+ * the fork's Utils.attributeForSkillName lookup order.
+ * @param {string} normalizedName
+ * @returns {string} attribute key or ""
  */
-async function ensureUntrainedSkill(actor) {
-  let untrained;
-  for (const item of actor.items) {
-    if (isUntrainedSkillItem(item)) {
-      untrained = item;
-      break;
+function attributeFromSkillsData(normalizedName) {
+  const data = game.brsw?.SKILLS_DATA;
+  if (!normalizedName || !data) {
+    return "";
+  }
+  const swid = game.swade.util.slugify(normalizedName);
+  if (data[normalizedName]) {
+    return data[normalizedName].attribute;
+  }
+  if (data[swid]) {
+    return data[swid].attribute;
+  }
+  for (const skillData of Object.values(data)) {
+    if (skillData.name.toLowerCase() === normalizedName) {
+      return skillData.attribute;
     }
   }
-  if (untrained) {
-    const needsFix =
-      untrained.system.die.sides !== UNTRAINED_DIE_SIDES ||
-      untrained.system.die.modifier !== UNTRAINED_DIE_MODIFIER ||
-      untrained.system["wild-die"].sides !== UNTRAINED_WILD_DIE_SIDES;
-    if (needsFix) {
-      console.log(LOG_PREFIX, `fixing untrained dice on ${actor.name}`);
-      await untrained.update({
-        "system.die.sides": UNTRAINED_DIE_SIDES,
-        "system.die.modifier": UNTRAINED_DIE_MODIFIER,
-        "system.wild-die.sides": UNTRAINED_WILD_DIE_SIDES,
-      });
+  return "";
+}
+
+/**
+ * Resolves a skill's linked attribute from an embedded skill item on any
+ * of the selected tokens' actors (the best source: whoever has the skill
+ * defines its attribute at this table).
+ * @param {Token[]} tokens
+ * @param {string} normalizedName
+ * @returns {string} attribute key or ""
+ */
+function attributeFromSelectedTokens(tokens, normalizedName) {
+  for (const token of tokens) {
+    const skill = findSkillByName(token.actor, normalizedName);
+    if (skill?.system.attribute) {
+      return skill.system.attribute;
     }
-    return untrained;
   }
-  console.log(LOG_PREFIX, `creating Untrained skill on ${actor.name}`);
-  const created = await actor.createEmbeddedDocuments("Item", [
-    {
-      name: game.i18n.localize("MDCSWT.GroupRoll.Untrained"),
-      type: "skill",
-      img: UNTRAINED_ITEM_IMG,
-      system: {
-        attribute: "",
-        die: { sides: UNTRAINED_DIE_SIDES, modifier: UNTRAINED_DIE_MODIFIER },
-        "wild-die": { sides: UNTRAINED_WILD_DIE_SIDES },
-      },
-    },
-  ]);
-  return created[0];
+  return "";
+}
+
+/**
+ * Asks the GM which attribute an unknown skill is linked to.
+ * @param {string} skillLabel Display name of the skill being resolved
+ * @returns {Promise<string|null>} attribute key or null on cancel
+ */
+async function showAttributeDialog(skillLabel) {
+  const loc = (key) => game.i18n.localize(key);
+  return foundry.applications.api.DialogV2.wait({
+    window: { title: `${loc("MDCSWT.GroupRoll.Title")} — ${skillLabel}` },
+    content: `<p>${loc("MDCSWT.GroupRoll.Attributes")}?</p>`,
+    rejectClose: false,
+    buttons: ATTRIBUTES.map((a) => ({
+      action: a,
+      label: loc(ATTRIBUTE_I18N[a]),
+    })),
+  });
 }
 
 /**
@@ -173,6 +191,13 @@ async function showTraitDialog(skillOptions) {
   const skillOptionsHtml = skillOptions
     .map((s) => `<option value="skill:${s.value}">${s.label}</option>`)
     .join("");
+  // Untrained attempts keyed directly on an attribute, for skills nobody
+  // in the selection has: "Agility Skill", "Smarts Skill", ...
+  const skillWord = loc("TYPES.Item.skill");
+  const untrainedOptions = ATTRIBUTES.map(
+    (a) =>
+      `<option value="untrained:${a}">${loc(ATTRIBUTE_I18N[a])} ${skillWord}</option>`,
+  ).join("");
   const content = `
     <div class="form-group">
       <label>${loc("MDCSWT.GroupRoll.Trait")}</label>
@@ -184,7 +209,7 @@ async function showTraitDialog(skillOptions) {
           ${skillOptionsHtml}
         </optgroup>
         <optgroup label="${loc("MDCSWT.GroupRoll.Special")}">
-          <option value="untrained">${loc("MDCSWT.GroupRoll.Untrained")}</option>
+          ${untrainedOptions}
           <option value="other">${loc("MDCSWT.GroupRoll.Other")}</option>
         </optgroup>
       </select>
@@ -264,9 +289,12 @@ async function showOtherDialog() {
 }
 
 /**
- * Creates the BR2 card for one token and the chosen trait.
+ * Creates the BR2 card for one token and the chosen trait. Actors who
+ * lack the chosen skill make an untrained attempt per the house rule via
+ * the fork API (detached trait data, no item touched).
  * @param {Token} token
- * @param {{kind: string, name: string}} selection
+ * @param {{kind: string, name: string, label: string,
+ *   attribute: string}} selection
  * @returns {Promise<object>} the BrCommonCard
  */
 async function createCardForToken(token, selection) {
@@ -277,14 +305,22 @@ async function createCardForToken(token, selection) {
       selection.name,
     );
   }
-  let skill;
   if (selection.kind === "skill") {
-    skill = findSkillByName(token.actor, selection.name);
+    const skill = findSkillByName(token.actor, selection.name);
+    if (skill) {
+      return game.brsw.create_skill_card(token, skill.id);
+    }
+    // Untrained attempt named after the attempted skill, so blind traits
+    // and name-keyed global actions keep matching.
+    return game.brsw.create_untrained_skill_card(token, selection.attribute, {
+      skill_name: selection.label,
+    });
   }
-  if (!skill) {
-    skill = await ensureUntrainedSkill(token.actor);
-  }
-  return game.brsw.create_skill_card(token, skill.id);
+  // kind === "untrained": attribute-based attempt named like the dialog
+  // entry ("Agility Skill", ...).
+  return game.brsw.create_untrained_skill_card(token, selection.attribute, {
+    skill_name: selection.label,
+  });
 }
 
 /**
@@ -297,7 +333,7 @@ export async function rollGroupTrait() {
     ui.notifications.warn(loc("MDCSWT.GroupRoll.GMOnly"));
     return;
   }
-  if (!game.brsw?.create_skill_card) {
+  if (!game.brsw?.create_skill_card || !game.brsw?.create_untrained_skill_card) {
     ui.notifications.error(loc("MDCSWT.GroupRoll.NoBR2"));
     return;
   }
@@ -321,24 +357,57 @@ export async function rollGroupTrait() {
     return;
   }
 
-  const choices = await showTraitDialog(buildSkillUnion(tokens));
+  const skillUnion = buildSkillUnion(tokens);
+  const choices = await showTraitDialog(skillUnion);
   if (!choices) {
     return;
   }
 
-  // Resolve the selection into {kind, name}.
+  // Resolve the selection into {kind, name, label, attribute}.
   let selection;
-  if (choices.trait === "untrained") {
-    selection = { kind: "untrained", name: "" };
-  } else if (choices.trait === "other") {
+  if (choices.trait === "other") {
     const otherName = await showOtherDialog();
     if (!otherName) {
       return;
     }
-    selection = { kind: "skill", name: normalizeSkillName(otherName) };
+    selection = {
+      kind: "skill",
+      name: normalizeSkillName(otherName),
+      label: otherName.replace("★ ", "").trim(),
+      attribute: "",
+    };
   } else {
     const [kind, ...rest] = choices.trait.split(":");
-    selection = { kind: kind, name: rest.join(":") };
+    const name = rest.join(":");
+    selection = { kind: kind, name: name, label: name, attribute: "" };
+    if (kind === "untrained") {
+      selection.attribute = name;
+      selection.label = `${loc(ATTRIBUTE_I18N[name])} ${loc("TYPES.Item.skill")}`;
+    } else if (kind === "skill") {
+      const union = skillUnion.find((s) => s.value === name);
+      if (union) {
+        selection.label = union.label;
+      }
+    }
+  }
+
+  // For skill selections, pre-resolve the linked attribute once so any
+  // actor lacking the skill can make an untrained attempt: an embedded
+  // skill on a selected actor wins, then BR2's cached skill data, then
+  // the GM is asked.
+  if (selection.kind === "skill") {
+    const everyoneHasIt = tokens.every((token) =>
+      findSkillByName(token.actor, selection.name),
+    );
+    if (!everyoneHasIt) {
+      selection.attribute =
+        attributeFromSelectedTokens(tokens, selection.name) ||
+        attributeFromSkillsData(selection.name) ||
+        (await showAttributeDialog(selection.label));
+      if (!selection.attribute) {
+        return;
+      }
+    }
   }
 
   // Phase 1 — create all cards. If privateRoll is set, a scoped
