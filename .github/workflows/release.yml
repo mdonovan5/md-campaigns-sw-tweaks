@@ -23,6 +23,24 @@ jobs:
             exit 1
           fi
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Compile compendium packs from source
+        run: |
+          npm install --no-audit --no-fund @foundryvtt/foundryvtt-cli
+          rm -rf packs/macros
+          node build-packs.mjs
+
+      - name: Verify compiled pack is non-empty
+        run: |
+          if ! ls packs/macros/*.ldb >/dev/null 2>&1; then
+            echo "::error::packs/macros contains no .ldb file — pack compile produced an empty database"
+            exit 1
+          fi
+
       - name: Stamp download URL for this tag
         run: |
           jq --arg dl "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/module.zip" \
@@ -30,7 +48,7 @@ jobs:
           mv module.json.tmp module.json
 
       - name: Build module.zip
-        run: zip -r module.zip module.json scripts lang README.md
+        run: zip -r module.zip module.json scripts lang packs/macros README.md
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
