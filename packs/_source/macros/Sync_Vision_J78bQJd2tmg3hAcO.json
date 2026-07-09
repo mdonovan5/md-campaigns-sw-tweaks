@@ -1,0 +1,27 @@
+{
+  "name": "Sync Vision",
+  "type": "script",
+  "_id": "J78bQJd2tmg3hAcO",
+  "author": null,
+  "img": "icons/svg/dice-target.svg",
+  "scope": "global",
+  "command": "const api = game.modules.get(\"md-campaigns-sw-tweaks\")?.api;\nif (!api) return ui.notifications.error(\"MD Campaigns SW Tweaks is not active.\");\napi.syncVision();",
+  "folder": null,
+  "sort": 900000,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14",
+    "systemId": "swade",
+    "systemVersion": "6.0.3",
+    "createdTime": 1783555748200,
+    "modifiedTime": 1783555748200,
+    "lastModifiedBy": null,
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!macros!J78bQJd2tmg3hAcO"
+}

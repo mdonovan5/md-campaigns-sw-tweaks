@@ -1,0 +1,27 @@
+{
+  "name": "Whisper",
+  "type": "script",
+  "_id": "ldN3PaBNypGLSnik",
+  "author": null,
+  "img": "icons/svg/deaf.svg",
+  "scope": "global",
+  "command": "const api = game.modules.get(\"md-campaigns-sw-tweaks\")?.api;\nif (!api) return ui.notifications.error(\"MD Campaigns SW Tweaks is not active.\");\napi.whisper();",
+  "folder": null,
+  "sort": 700000,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14",
+    "systemId": "swade",
+    "systemVersion": "6.0.3",
+    "createdTime": 1783555748200,
+    "modifiedTime": 1783555748200,
+    "lastModifiedBy": null,
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!macros!ldN3PaBNypGLSnik"
+}

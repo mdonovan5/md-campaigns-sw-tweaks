@@ -1,0 +1,27 @@
+{
+  "name": "Step Up Weapon Damage",
+  "type": "script",
+  "_id": "6C8SiuJDVaWwqjsh",
+  "author": null,
+  "img": "icons/svg/dice-target.svg",
+  "scope": "global",
+  "command": "const api = game.modules.get(\"md-campaigns-sw-tweaks\")?.api;\nif (!api) return ui.notifications.error(\"MD Campaigns SW Tweaks is not active.\");\napi.stepUpWeaponDamage();",
+  "folder": null,
+  "sort": 200000,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14",
+    "systemId": "swade",
+    "systemVersion": "6.0.3",
+    "createdTime": 1783555748200,
+    "modifiedTime": 1783555748200,
+    "lastModifiedBy": null,
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!macros!6C8SiuJDVaWwqjsh"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Show/Hide Scene Navigation",
+  "type": "script",
+  "_id": "h7nK2Rg4iRX7J1JP",
+  "author": null,
+  "img": "https://assets.forge-vtt.com/62ca1f94b42ee77570ebdc79/moulinette-v2/gameicons/compass.svg",
+  "scope": "global",
+  "command": "const api = game.modules.get(\"md-campaigns-sw-tweaks\")?.api;\nif (!api) return ui.notifications.error(\"MD Campaigns SW Tweaks is not active.\");\napi.toggleSceneNavigation();",
+  "folder": null,
+  "sort": 1100000,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14",
+    "systemId": "swade",
+    "systemVersion": "6.0.3",
+    "createdTime": 1783555748200,
+    "modifiedTime": 1783555748200,
+    "lastModifiedBy": null,
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!macros!h7nK2Rg4iRX7J1JP"
+}
