@@ -21,6 +21,7 @@ import {
   deleteRecentMessages,
 } from "./world-utilities.js";
 import { placePresetTemplate, convertSceneTokens } from "./scene-tools.js";
+import { cleanupActors } from "./actor-cleanup.js";
 
 export const macroApi = {
   stepUpWeaponDamage,
@@ -37,4 +38,5 @@ export const macroApi = {
   deleteRecentMessages,
   placePresetTemplate,
   convertSceneTokens,
+  cleanupActors,
 };
