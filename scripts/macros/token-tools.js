@@ -107,7 +107,12 @@ export async function rollUntrainedSkill() {
     rejectClose: false,
   });
   if (!attribute || !ATTRIBUTES.includes(attribute)) return;
+  const skillName = `Untrained ${
+    attribute.charAt(0).toUpperCase() + attribute.slice(1)
+  } Skill`;
   for (const token of tokens) {
-    await game.brsw.create_untrained_skill_card(token, attribute);
+    await game.brsw.create_untrained_skill_card(token, attribute, {
+      skill_name: skillName,
+    });
   }
 }
