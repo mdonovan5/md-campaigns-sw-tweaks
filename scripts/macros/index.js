@@ -22,6 +22,10 @@ import {
 } from "./world-utilities.js";
 import { placePresetTemplate, convertSceneTokens } from "./scene-tools.js";
 import { cleanupActors } from "./actor-cleanup.js";
+import {
+  rollUntrainedSkill,
+  selectPlayerCharacterTokens,
+} from "./token-tools.js";
 
 export const macroApi = {
   stepUpWeaponDamage,
@@ -39,4 +43,6 @@ export const macroApi = {
   placePresetTemplate,
   convertSceneTokens,
   cleanupActors,
+  rollUntrainedSkill,
+  selectPlayerCharacterTokens,
 };
